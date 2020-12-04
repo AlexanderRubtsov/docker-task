@@ -1,0 +1,48 @@
+version: "3"
+services:
+  server:
+    image: spring-admin-server:latest
+    restart: always
+    ports:
+      - 9003:9003
+
+  client:
+    image: client-service-homework:latest
+    restart: always
+#    environment:
+#      - spring.boot.admin.client.url=http://${MY_VALUE}:9091
+    depends_on:
+      - server
+      - mongo
+    ports:
+      - 8090:8080
+    env_file:
+      - .env
+
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
+      - MONGO_INITDB_DATABASE=project
+    env_file:
+      - .env
+  mongo-express:
+      image: mongo-express
+      restart: always
+      environment:
+        - ME_CONFIG_MONGODB_SERVER=mongo
+        - ME_CONFIG_MONGODB_PORT=27017
+        - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
+        - ME_CONFIG_MONGODB_AUTH_DATABASE=admin
+        - ME_CONFIG_MONGODB_AUTH_USERNAME=${MONGO_ROOT_USER}
+        - ME_CONFIG_MONGODB_AUTH_PASSWORD=${MONGO_ROOT_PASSWORD}
+        - ME_CONFIG_BASICAUTH_USERNAME=${MONGOEXPRESS_LOGIN}
+        - ME_CONFIG_BASICAUTH_PASSWORD=${MONGOEXPRESS_PASSWORD}
+      env_file:
+        - .env
+      depends_on:
+        - mongo
+      ports:
+        - "8081:8081"
